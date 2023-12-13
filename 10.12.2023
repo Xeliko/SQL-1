@@ -16,7 +16,7 @@ insert into Groups(Name,Rating,Year) values (N'Group 3', 2,1);
 
 create table Departments(
 	Id int primary key identity(1,1),
-	Financing money NOT NULL CHECK(Financing !< 0) DEFAULT(0),
+	Financing money NOT NULL CHECK(Financing > 0) DEFAULT(0),
 	Name nvarchar(100) NOT NULL UNIQUE CHECK(Name != '')
 );
 
@@ -34,9 +34,9 @@ insert into Faculties(Name) values (N'Facultie 2');
 
 create table Teachers(
 		Id int primary key identity(1,1),
-		EmploymentDate date NOT NULL CHECK(EmploymentDate !< '01.01.1990'),
+		EmploymentDate date NOT NULL CHECK(EmploymentDate > '01.01.1990'),
 		Name nvarchar(MAX) NOT NULL CHECK(Name != ''),
-		Premium money NOT NULL CHECK(Premium !< 0) DEFAULT(0),
+		Premium money NOT NULL CHECK(Premium > 0) DEFAULT(0),
 		Salary money NOT NULL CHECK( Salary > 0 ),
 		Surname nvarchar(MAX) NOT NULL CHECK(Surname != '')
 );
