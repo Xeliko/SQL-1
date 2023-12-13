@@ -1,0 +1,116 @@
+create database Academy;
+
+use Academy;
+
+create table Groups (
+	Id int primary key identity(1,1),
+	Name nvarchar(10) NOT NULL UNIQUE CHECK(Name != ''),
+	Rating int NOT NULL CHECK(Rating >= 0 AND Rating <= 5),
+	Year int NOT NULL CHECK(Year >= 1 AND Year <=5)
+);
+
+insert into Groups(Name,Rating,Year) values (N'Group 1', 1,2);
+insert into Groups(Name,Rating,Year) values (N'Group 2', 3,5);
+insert into Groups(Name,Rating,Year) values (N'Group 3', 2,5);
+
+
+create table Departments(
+	Id int primary key identity(1,1),
+	Financing money NOT NULL CHECK(Financing > 0) DEFAULT(0),
+	Name nvarchar(100) NOT NULL UNIQUE CHECK(Name != '')
+);
+
+insert into Departments(Financing,Name) values (40000, N'Department A');
+insert into Departments(Financing,Name) values (6700, N'Department B');
+insert into Departments(Financing,Name) values (13000, N'Software Development');
+
+create table Faculties(
+	Id int primary key identity(1,1),
+	Dean nvarchar(MAX) NOT NULL CHECK(Dean != ''),
+	Name nvarchar(100) NOT NULL UNIQUE CHECK(Name != '')
+);
+
+insert into Faculties(Dean,Name) values (N'Dean1',N'Facultie 1');
+insert into Faculties(Dean,Name) values (N'Dean2',N'Facultie 2');
+insert into Faculties(Dean,Name) values (N'Dean3',N'Computer Science');
+
+create table Teachers(
+		Id int primary key identity(1,1),
+		EmploymentDate date NOT NULL CHECK(EmploymentDate > '01.01.1990'),
+		IsAssistant bit NOT NULL DEFAULT(0),
+		ISProfessor bit NOT NULL DEFAULT(0),
+		Name nvarchar(MAX) NOT NULL CHECK(Name != ''),
+		Position nvarchar(MAX) NOT NULL CHECK(Position != ''),
+		Premium money NOT NULL CHECK(Premium > 0) DEFAULT(0),
+		Salary money NOT NULL CHECK( Salary > 0 ),
+		Surname nvarchar(MAX) NOT NULL CHECK(Surname != '')
+);
+
+insert into Teachers(EmploymentDate,IsAssistant,ISProfessor,Name,Position,Premium,Salary,Surname) values ('07.07.1999',0,1,N'Murad',N'Professor of Engeeniring',150,1100,N'Afandiyev');
+insert into Teachers(EmploymentDate,IsAssistant,ISProfessor,Name,Position,Premium,Salary,Surname) values ('07.07.2001',0,0,N'Melek',N'Worker',150,700,N'Afandiyeva');
+insert into Teachers(EmploymentDate,IsAssistant,ISProfessor,Name,Position,Premium,Salary,Surname) values ('07.07.2005',1,0,N'Leyla',N'Assistant of Professor Afandiyev',200,950,N'Babaeva');
+
+select * from Groups;
+select * from Departments;
+select * from Faculties;
+select * from Teachers;
+
+--1
+select Name,Financing,Id from Departments;
+
+--2
+select Name as "Group Name",Rating as "Group Rating" from Groups;
+
+--3
+select Surname,
+(Salary/Premium) * 100 as "Rate percentage relative to premium",
+(Salary/Premium) * 100 as "Rate percentage relative to salary" from Teachers;
+
+--4
+select CONCAT('The dean of falulty ', Name, ' is ', Dean, ' .') as FacultyInfo from Faculties;
+
+--5
+select Surname from Teachers where ISProfessor = 1 and Salary > 1050;
+
+--6
+select Name from Departments
+where Financing <11000 or Financing > 25000;
+
+--7
+select Name from Faculties
+where Name != 'Computer Science';
+
+--8
+select Surname,Position from Teachers
+where ISProfessor !=1;
+
+--9
+select Surname,Position,Salary,Premium from Teachers
+where IsAssistant =1 and Premium >= 160 and Premium <= 550;
+
+--10
+select Surname,Salary from Teachers
+where IsAssistant =1;
+
+--11
+select Surname,Position from Teachers
+where EmploymentDate < '01.01.2000';
+
+--12
+select Name as "Name of Department"
+from Departments
+where Name < 'Software Development'
+order by Name;
+
+--13
+select Surname from Teachers
+where IsAssistant =1 and (Salary+Premium) <=1200;
+
+--14
+select Name from Groups
+where Year = 5 and Rating >=2 and Rating <=4;
+
+--15
+select Surname from Teachers
+where Salary < 550 or Premium < 200;
+
