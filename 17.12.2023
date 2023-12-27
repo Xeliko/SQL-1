@@ -1,0 +1,106 @@
+create database lesson4;
+use lesson4;
+
+go;
+
+create table People(
+	[Id] int primary key identity(1, 1),
+	[Name] nvarchar(30) NOT NULL,
+	[Surname] nvarchar(30) NOT NULL,
+	[Age] int NOT NULL check (Age >= 14 and Age < 100)
+);
+
+create table Employee(
+	[Id] int primary key identity(1, 1),
+	[Salary] smallmoney NOT NULL check ([Salary] >= 300),
+	[Experience] int NOT NULL check ([Experience] >= 0)
+);
+
+create table Faculty(
+	[Id] int primary key identity(1, 1),
+	[Name] nvarchar(30) NOT NULL
+);
+
+create table Students(
+	[Id] int primary key identity(1, 1),
+	[PersonId] int foreign key references People(Id),
+	[GPA] int NOT NULL check ([GPA] >= 0 and [GPA] <= 12)
+);
+
+create table Teachers(
+	[Id] int primary key identity(1, 1),
+	[PersonId] int foreign key references People(Id),
+	[EmployeeId] int foreign key references Employee(Id)
+);
+
+create table Groups(	
+	[Id] int primary key identity(1, 1),
+	[Name] nvarchar(30) NOT NULL,[Course] int NOT NULL check ([Course] >= 1 and [Course] <= 6),
+	[FacultyId] int foreign key references Faculty(Id)
+);
+
+create table GroupData(
+	[Id] int primary key identity(1, 1),
+	[StudentId] int foreign key references Students(Id),
+	[GroupId] int foreign key references Groups(Id)
+);
+
+create table StudyPlan(
+	[Id] int primary key identity(1, 1),
+	[TeacherId] int foreign key references Teachers(Id),
+	[GroupId] int foreign key references Groups(Id),
+	[FacultyId] int foreign key references Faculty(Id)
+);
+
+go;
+
+insert into People([Name], [Surname], [Age]) values(N'Murad', N'Afandiyev', 15);
+insert into People([Name], [Surname], [Age]) values(N'Nihad', N'Afandiyev', 14);
+insert into People([Name], [Surname], [Age]) values(N'Leyla', N'Afandiyeva', 10);
+insert into People([Name], [Surname], [Age]) values(N'Maryam', N'Afandiyeva', 2);
+insert into People([Name], [Surname], [Age]) values(N'Seymur', N'Seymurov', 30);
+insert into People([Name], [Surname], [Age]) values(N'Riad', N'Farajzade', 18);
+
+insert into Students(PersonId, GPA) values(1, 10);
+insert into Students(PersonId, GPA) values(2, 11);
+insert into Students(PersonId, GPA) values(3, 12);
+insert into Students(PersonId, GPA) values(4, 9);
+insert into Students(PersonId, GPA) values(5, 10);
+insert into Students(PersonId, GPA) values(6, 11);
+
+insert into Employee(Salary, Experience) values(4000, 4);
+insert into Employee(Salary, Experience) values(4001, 4);
+insert into Employee(Salary, Experience) values(4002, 4);
+insert into Employee(Salary, Experience) values(4003, 4);
+
+insert into Teachers(PersonId, EmployeeId) values(1, 1);
+insert into Teachers(PersonId, EmployeeId) values(2, 2);
+insert into Teachers(PersonId, EmployeeId) values(3, 3);
+insert into Teachers(PersonId, EmployeeId) values(4, 4);
+
+insert into Faculty(Name) values(N'Computer Science');
+insert into Faculty(Name) values(N'Information Technology');
+
+insert into Groups(Name, Course, FacultyId) values(N'P311', 3, 1);
+insert into Groups(Name, Course, FacultyId) values(N'P312', 3, 1);
+insert into Groups(Name, Course, FacultyId) values(N'P313', 3, 2);
+
+insert into StudyPlan(TeacherId, GroupId) values(1, 1);
+insert into StudyPlan(TeacherId, GroupId) values(2, 2);
+
+insert into People(name, surname, age) values(N'Javid', N'Afandiyev', 15);
+insert into People(name, surname, age) values(N'Amal', N'Baghirli', 18);
+insert into People(name, surname, age) values(N'Teymur', N'Sadiqov', 17);
+insert into People(name, surname, age) values(N'Rustam', N'Haciyev', 16);
+insert into People(name, surname, age) values(N'Vaqif', N'Haciyev', 16);
+insert into People(name, surname, age) values(N'Akif', N'Aliyev', 16);
+insert into People(name, surname, age) values(N'Farman', N'Azizov', 15);
+insert into People(name, surname, age) values(N'Jalal', N'Safarov', 13);
+insert into People(name, surname, age) values(N'Javid', N'Mustafayev', 18);
+insert into People(name, surname, age) values(N'Amin', N'Yarov', 16);
+insert into People(name, surname, age) values(N'Gudrat', N'Ibrahimzade', 17);
+insert into People(name, surname, age) values(N'Omar', N'Farajzade', 12);
+
+insert into Students(PersonId, GPA) values(7, 10);
+insert into Students(PersonId, GPA) values(8, 11);
+insert into Students(PersonId, GPA) values(9, 12);
