@@ -1,0 +1,208 @@
+create database hw;
+use hw;
+go;
+
+CREATE TABLE Curators (    
+	Id INT PRIMARY KEY NOT NULL IDENTITY(1,1),
+    [Name] NVARCHAR(MAX) NOT NULL CHECK ([Name] != ''),    
+	Surname NVARCHAR(MAX) NOT NULL CHECK (Surname != '')
+);
+
+CREATE TABLE Faculties (    
+	Id INT PRIMARY KEY NOT NULL IDENTITY(1,1),
+    Financing MONEY NOT NULL CHECK (Financing > 0) DEFAULT (0),    
+	[Name] NVARCHAR(100) NOT NULL UNIQUE CHECK ([Name] != '')
+);
+
+CREATE TABLE Departments (    
+	Id INT PRIMARY KEY NOT NULL IDENTITY(1,1),
+    Financing MONEY NOT NULL CHECK (Financing > 0) DEFAULT (0),    
+	[Name] NVARCHAR(100) NOT NULL UNIQUE CHECK ([Name] != ''),
+    FacultyId INT NOT NULL FOREIGN KEY REFERENCES Faculties(Id)  
+);
+
+CREATE TABLE Groups (    
+	Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+    [Name] NVARCHAR(10) NOT NULL UNIQUE CHECK ([Name] != ''),    
+	CourseYear INT NOT NULL CHECK (CourseYear >= 1 AND CourseYear <= 5),
+    DepartmentId INT NOT NULL FOREIGN KEY REFERENCES Departments(Id)   
+);
+
+CREATE TABLE GroupsCurators (    
+	Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+    CuratorId INT NOT NULL FOREIGN KEY REFERENCES Curators(Id),
+	GroupId INT NOT NULL FOREIGN KEY REFERENCES Groups(Id)
+);
+
+CREATE TABLE Subjects (    
+	Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+    [Name] NVARCHAR(100) NOT NULL UNIQUE CHECK ([Name] != '')
+);
+
+CREATE TABLE Teachers (
+    Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),   
+	[Name] NVARCHAR(MAX) NOT NULL CHECK ([Name] != ''),
+    Salary MONEY NOT NULL CHECK (Salary >= 0),    
+	Surname NVARCHAR(MAX) NOT NULL CHECK (Surname != '')
+);
+
+CREATE TABLE Lectures (    
+	Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+    LectureRoom NVARCHAR(MAX) NOT NULL CHECK (LectureRoom != ''),    
+	SubjectId INT NOT NULL FOREIGN KEY REFERENCES Subjects(Id),
+    TeacherId INT NOT NULL FOREIGN KEY REFERENCES Teachers(Id)
+);
+
+CREATE TABLE GroupsLectures (
+    Id INT NOT NULL PRIMARY KEY IDENTITY(1,1),    
+	GroupId INT NOT NULL FOREIGN KEY REFERENCES Groups(Id),
+    LectureId INT NOT NULL FOREIGN KEY REFERENCES Lectures(Id) 
+);
+
+go;
+
+INSERT INTO Curators ([Name], Surname)
+VALUES ('John', 'Doe'),
+       ('Jane', 'Smith'),
+       ('Michael', 'Johnson'),
+       ('Susan', 'Williams');
+
+INSERT INTO Faculties (Financing, [Name])
+VALUES (2000, 'Computer Science'),
+       (1800, 'Information Technology'),
+       (2500, 'Mathematics'),
+       (1200, 'Design');
+
+INSERT INTO Departments (Financing, [Name], FacultyId)
+VALUES (600, 'Database Management', 1),
+       (800, 'Web Development', 2),
+       (400, 'Software Engineering', 3),
+       (700, 'Graphic Design', 4);
+
+INSERT INTO Groups ([Name], CourseYear, DepartmentId)
+VALUES ('CSD_3221', 2, 1),
+       ('IT_3228', 1, 2),
+       ('SE_1221', 1, 3),
+       ('GD_4381', 3, 4);
+
+INSERT INTO GroupsCurators (CuratorId, GroupId)
+VALUES (1, 1),
+       (2, 2),
+       (3, 3),
+       (4, 4);
+
+INSERT INTO Subjects ([Name])
+VALUES ('Programming Fundamentals'),
+       ('Web Development Basics'),
+       ('Software Design Patterns'),
+       ('Graphic Design Principles');
+
+INSERT INTO Teachers ([Name], Salary, Surname)
+VALUES ('Robert', 4000, 'Anderson'),
+       ('Emily', 2800, 'Martin'),
+       ('David', 3200, 'Wilson'),
+       ('Alice', 2600, 'Clark');
+
+INSERT INTO Lectures (LectureRoom, SubjectId, TeacherId)
+VALUES ('3221', 1, 1),
+       ('3228', 2, 2),
+       ('1221', 3, 3),
+       ('4381', 4, 4);
+
+INSERT INTO GroupsLectures (GroupId, LectureId)
+VALUES (1, 1),
+       (2, 2),
+       (3, 3),
+       (4, 4);
+go;
+
+SELECT * FROM Curators;
+SELECT * FROM Faculties;
+SELECT * FROM Departments;
+SELECT * FROM Groups;
+SELECT * FROM GroupsCurators;
+SELECT * FROM Subjects;
+SELECT * FROM Teachers;
+SELECT * FROM Lectures;
+SELECT * FROM GroupsLectures;
+
+go;
+
+--1
+SELECT Teachers.*, Groups.*
+FROM Teachers
+INNER JOIN Groups ON 1=1;
+
+--2
+SELECT F.[Name] AS FacultyName, F.Financing AS FacultyFinancing, D.[Name] AS DepartmentName, D.Financing AS DepartmentFinancing
+FROM Faculties F
+INNER JOIN Departments D ON F.ID = D.FacultyId
+WHERE D.Financing > F.Financing;
+
+--3
+SELECT C.Surname AS CuratorSurname,G.Name AS GroupName
+FROM Curators C
+INNER JOIN GroupsCurators GC ON C.Id = GC.CuratorId
+INNER JOIN Groups G ON GC.GroupId = G.Id;
+
+--4
+SELECT T.Name AS TeacherName, T.Surname AS TeacherSurname
+FROM Teachers T
+INNER JOIN Lectures L ON T.Id = L.TeacherId
+INNER JOIN  GroupsLectures GL ON L.Id = GL.LectureId
+INNER JOIN Groups G ON GL.GroupId = G.Id
+WHERE G.[Name] = 'P107';
+ 
+--5
+SELECT T.Surname AS TeacherSurname, F.[Name] AS FacultyName
+FROM Teachers T
+INNER JOIN Lectures L ON T.Id = L.TeacherId
+INNER JOIN Subjects S ON L.SubjectId = S.Id
+INNER JOIN Departments D ON S.Id = D.Id
+INNER JOIN Faculties F ON D.FacultyId = F.Id;
+
+--6
+SELECT D.[Name] AS DepartmentName, G.[Name] AS GroupName
+FROM Departments D
+INNER JOIN Groups G ON D.Id = G.DepartmentId;
+
+--7
+SELECT S.[Name] AS DisciplinName
+FROM Teachers T
+INNER JOIN Lectures L ON T.Id = L.TeacherId
+INNER JOIN Subjects S ON L.SubjectId = S.Id
+WHERE T.[Name] = 'Samantha' AND T.Surname = 'Adams';
+
+--8
+SELECT D.[Name] AS DepartmentName
+FROM Departments D
+INNER JOIN Groups G ON D.Id = G.DepartmentId
+INNER JOIN GroupsLectures GL ON G.Id = GL.GroupId
+INNER JOIN Lectures L ON GL.LectureId = L.Id
+INNER JOIN Subjects S ON  L.SubjectId = S.Id
+WHERE S.[Name] = 'Database Theory';
+
+--9
+SELECT G.[Name] AS GroupName
+FROM Groups G
+INNER JOIN Departments D ON G.DepartmentId = D.Id
+INNER JOIN Faculties F ON D.FacultyId = F.Id
+WHERE F.[Name] = 'Computer Science';
+
+--10
+SELECT G.[Name] AS GroupName, F.[Name] AS FacultyName
+FROM Groups G
+INNER JOIN Departments D ON G.DepartmentId = D.Id
+INNER JOIN Faculties F ON D.FacultyId = F.Id
+WHERE G.CourseYear = 5;
+
+--11
+SELECT T.Name AS TeacherName, T.Surname AS TeacherSurname,
+L.LectureRoom, S.Name AS SubjectName, G.Name AS GroupName
+FROM Teachers T
+INNER JOIN Lectures L ON L.TeacherId = T.Id
+INNER JOIN Subjects S ON L.SubjectId = S.Id
+INNER JOIN GroupsLectures GL ON L.Id = GL.LectureId
+INNER JOIN Groups G ON GL.GroupId = G.Id
+WHERE L.LectureRoom = 'B103';
+                 
