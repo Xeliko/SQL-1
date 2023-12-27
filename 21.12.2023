@@ -1,0 +1,221 @@
+create database hw05;
+use hw05;
+
+go;
+
+create table Faculties(
+	Id int primary key not null identity(1,1),
+	[Name] nvarchar(100) not null unique check([Name] is not null),
+);
+
+create table Departments(
+	Id int primary key not null identity(1,1),
+	Financing money not null check(Financing >= 0) default(0),
+	[Name] nvarchar(100) not null unique check([Name] is not null),
+	FacultyId int not null foreign key references Faculties(Id)
+);
+
+create table Groups(
+	Id int primary key not null identity(1,1),
+	[Name] nvarchar(10) not null unique check([Name] is not null),
+	CourseYear int not null check(CourseYear between 1 and 5),
+	DepartmentId int not null foreign key references Departments(Id)
+);
+
+create table Subjects(
+	Id int primary key not null identity(1,1),
+	[Name] nvarchar(100) not null unique check([Name] is not null)
+);
+
+create table Teachers(
+	Id int primary key not null identity(1,1),
+	[Name] nvarchar(max) not null check([Name] is not null),
+	Salary money not null check(Salary > 0),
+	Surname nvarchar(max) not null check(Surname is not null)
+);
+
+create table Lectures(
+	Id int primary key not null identity(1,1),
+	[DayOfWeek] int not null check([DayOfWeek] between 1 and 7),
+	LectureRoom nvarchar(max) not null check(LectureRoom is not null),
+	SubjectId int not null foreign key references Subjects(Id),
+	TeachersId int not null foreign key references Teachers(Id)
+);
+
+create table GroupsLectures(
+	Id int primary key not null identity(1,1),
+	GroupId int not null foreign key references Groups(Id),
+	LectureId int not null foreign key references Lectures(Id)
+);
+
+create table Students(
+	Id int primary key identity(1,1),
+	[Name] nvarchar(max) NOT NULL check ([Name] is not null),
+	Surname nvarchar(max) NOT NULL check (Surname is  not null),
+	Age int NOT NULL check(Age>14)
+);
+
+create table GroupData(
+	Id int primary key identity(1,1),
+	GroupId int foreign key references Groups(Id),
+	StudentId int foreign key references Students(Id)
+);
+go;
+
+insert into Faculties ([Name]) values
+  ('Computer Science'),
+  ('Information Technology'),
+  ('Mathematics'),
+  ('Design');
+
+insert into Departments (Financing, [Name], FacultyId) values
+  (600, 'Database Management', 1),
+  (800, 'Web Development', 2),
+  (400, 'Software Engineering', 3),
+  (700, 'Graphic Design', 4);
+
+insert into Groups ([Name], CourseYear, DepartmentId) values
+  ('CSD_3221', 2, 1),
+  ('IT_3228', 1, 2),
+  ('SE_1221', 1, 3),
+  ('GD_4381', 3, 4);
+
+insert into Subjects ([Name]) values
+  ('Programming Fundamentals'),
+  ('Web Development Basics'),
+  ('Software Design Patterns'),
+  ('Graphic Design Principles');
+
+insert into Teachers ([Name], Salary, Surname) values
+  ('Robert', 4000, 'Anderson'),
+  ('Emily', 2800, 'Martin'),
+  ('David', 3200, 'Wilson'),
+  ('Alice', 2600, 'Clark');
+
+insert into Lectures ([DayOfWeek], LectureRoom, SubjectId, TeachersId) values
+  (1, 'Room A101', 1, 1),
+  (2, 'Room B203', 2, 2),
+  (3, 'Room C305', 3, 3),
+  (4, 'Room D407', 4, 4);
+
+insert into GroupsLectures (GroupId, LectureId) values
+  (1, 1),
+  (2, 2),
+  (3, 3),
+  (4, 4);
+
+insert into Students ([Name], Surname, Age)
+values
+    (N'John', N'Doe', 20),
+    (N'Jane', N'Smith', 22),
+    (N'Michael', N'Johnson', 21),
+    (N'Susan', N'Williams', 23);
+
+insert into GroupData (GroupId, StudentId)
+values
+    (1, 1),
+    (1, 2), 
+    (2, 3), 
+    (2, 4); 
+go;
+
+select * from Faculties;
+select * from Departments;
+select * from Groups;
+select * from Subjects;
+select * from Teachers;
+select * from Lectures;
+select * from GroupsLectures;
+select * from Students;
+select * from GroupData;
+go;
+
+--1
+select COUNT(*) as TeacherCount
+from GroupsLectures GL
+inner join Groups G on GL.GroupId = G.Id
+inner join Departments D on D.Id = G.DepartmentId
+inner join Lectures L on L.Id = GL.LectureId
+inner join Teachers T on T.Id = L.TeachersId
+where D.Name = 'Software Development';
+
+--2
+select COUNT(*) as LectureCount
+from Lectures L
+inner join Teachers T on L.TeachersId = T.Id
+where T.[Name] = '“Dave' and T.Surname = 'McQueen';
+
+--3
+select COUNT(*) as LectureCount
+from Lectures L
+where L.LectureRoom = 'D201';
+
+--4
+select L.LectureRoom as LectureRoomName, COUNT(*) as LectureCount
+from GroupsLectures GL
+inner join Lectures L on GL.LectureId = L.Id
+group by L.LectureRoom;
+
+--5
+select COUNT(StudentId) as StudentCount
+from GroupsLectures GL
+inner join Groups G on G.Id = GL.GroupId
+inner join GroupData GD on GD.GroupId = G.Id
+inner join Lectures L on L.Id = GL.LectureId
+inner join Teachers T on T.Id = L.TeachersId
+where T.[Name] = 'Jack' and T.Surname = 'Underhill'
+
+--6
+select AVG(T.Salary) as AverageSalary
+from GroupsLectures GL
+inner join Groups G on G.Id = GL.GroupId
+inner join Departments D on D.Id = G.DepartmentId
+inner join Faculties F on F.Id = D.FacultyId
+inner join Lectures L on L.Id = GL.LectureId
+inner join Teachers T on T.Id = L.TeachersId
+where F.[Name] = 'Computer Science';
+
+--7
+select MIN(GroupQuantity) as MinGroupQuantity, MAX(GroupQuantity) as MaxGroupQuantity
+from (select COUNT(*) as GroupQuantity from GroupData group by GroupId) as GroupCount;
+
+--8
+select AVG(Financing) as AverageFinancing
+from Departments;
+
+--9
+select T.[Name], T.Surname, COUNT(S.Id) as SubjectCount
+from Lectures L
+inner join Teachers T on T.Id = L.TeachersId
+inner join Subjects S on S.Id = L.SubjectId
+group by T.[Name], T.Surname
+
+--10
+select [DayOfWeek], COUNT(*) as LectureCount
+from Lectures 
+group by [DayOfWeek];
+
+--11
+select L.LectureRoom, COUNT(D.Id) as DepartmentCount
+from GroupsLectures GL
+inner join Groups G on G.Id = GL.GroupId
+inner join Departments D on D.Id = G.DepartmentId
+inner join Faculties F on F.Id = D.FacultyId
+inner join Lectures L on L.Id = GL.LectureId
+group by L.LectureRoom;
+
+--12
+select F.[Name], COUNT(S.Id) as SubjectCount
+from GroupsLectures GL
+inner join Groups G on G.Id = GL.GroupId
+inner join Departments D on D.Id = G.DepartmentId
+inner join Faculties F on F.Id = D.FacultyId
+inner join Lectures L on L.Id = GL.LectureId
+inner join Subjects S on S.Id = L.SubjectId
+group by F.[Name];
+
+--13
+select COUNT(*) as LectureCount
+from Lectures L
+inner join Teachers T on T.Id = L.TeachersId
+group by L.LectureRoom, T.Id;
