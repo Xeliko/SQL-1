@@ -1,0 +1,117 @@
+create database project;
+use project;
+go;
+
+CREATE TABLE FuelTypes (
+    fuel_type_id int primary key identity (1, 1),
+    fuel_type nvarchar(100) not null check (fuel_type is not null),
+);
+
+CREATE TABLE BodyTypes (
+    body_type_id int primary key identity (1, 1),
+    body_type nvarchar(100) not null check (body_type is not null)
+);
+
+CREATE TABLE Colors (
+    color_id int primary key identity (1, 1),
+    color_name nvarchar(100) not null check (color_name is not null)
+);
+
+CREATE TABLE Cars (
+	car_id int primary key identity (1, 1),
+    brand nvarchar(100) not null unique check (brand is not null),
+    model nvarchar(100) not null check (model is not null),
+    year int not null check (year is not null),
+    fuel_type_id int foreign key references FuelTypes(fuel_type_id),
+    body_type_id int foreign key references BodyTypes(body_type_id),
+    color_id int foreign key references Colors(color_id),
+    image_link nvarchar(max)
+);
+
+CREATE TABLE Users (
+    user_id int primary key identity (1, 1),
+    username nvarchar(100) not null unique check (username is not null),
+    password nvarchar(100) not null check (password is not null),
+    email nvarchar(100) not null unique check (email is not null)
+);
+
+CREATE TABLE ManufacturingCountries (
+    country_id int primary key identity (1, 1),
+    country_name nvarchar(100) not null check (country_name is not null)
+);
+
+CREATE TABLE Sellers (
+    seller_id int primary key identity (1, 1),
+    user_id int foreign key references Users(user_id),
+    company_name nvarchar(100) not null check (company_name is not null),
+    contact_number nvarchar(20) not null check (contact_number is not null),
+    country_id int foreign key references ManufacturingCountries(country_id),
+	rating int not null check(rating is not null)
+);
+
+CREATE TABLE ProductList (
+    product_id int primary key identity (1, 1),
+    car_id int foreign key references Cars(car_id),
+    seller_id int foreign key references Sellers(seller_id),
+    price money not null check (price is not null),
+    quantity int not null check (quantity is not null)
+);
+
+go;
+
+insert into FuelTypes (fuel_type_id, fuel_type) values 
+	   (1, 'Дизель'),
+       (2, 'Бензин'),
+       (3, 'Электрический'),
+       (4, 'Газ');
+ 
+insert into BodyTypes(body_type_id, body_type) values 
+	   (1, 'SUV'),
+       (2, 'Седан'),
+       (3, 'Хэтчбек');
+
+insert into Colors(color_id, color_name) values 
+	   (1, 'Красный'),
+       (2 ,'Синий'),
+       (3, 'Черный'),
+       (4, 'Оранжевый');
+
+insert into cars (brand, model, year, fuel_type_id, body_type_id, color_id, image_link) values
+    ('Toyota', 'Camry', 2022, 2, 2, 3, '/images/toyota_camry.jpg'),
+    ('Honda', 'Civic', 2021, 2, 2, 1, '/images/honda_civic.jpg'),
+    ('Tesla', 'Model 3', 2023, 3, 3, 2, '/images/tesla_model_3.jpg'),
+    ('BMW', 'X5', 2022, 2, 1, 4, '/images/bmw_x5.jpg');
+
+insert into Users (username, password, email) values
+    ('Иван_Иванов', 'БезопасныйПароль123', 'ivan.ivanov@example.com'),
+    ('Елена_Смирнова', 'НадежныйПароль456', 'elena.smirnova@example.com'),
+    ('Михаил_Петров', 'СекретныйП@роль', 'mikhail.petrov@example.com'),
+    ('Анна_Сидорова', 'П@роль123', 'anna.sidorova@example.com');
+
+insert into ManufacturingCountries (country_name) values
+    ('Япония'),
+    ('Германия'),
+    ('США'),
+    ('Корея');
+
+insert into Sellers (user_id, company_name, contact_number, country_id, rating) values
+    (1, 'Автоэкспресс', '+7 (123) 456-7890', 1, 4),
+    (2, 'АвтоМастер', '+7 (987) 654-3210', 2, 5),
+    (3, 'ГлобалАвто', '+7 (111) 222-3333', 3, 3),
+    (4, 'ЭкоАвто', '+7 (555) 777-9999', 4, 4);
+
+insert into ProductList (car_id, seller_id, price, quantity) values
+    (1, 1, 1500000, 5),
+    (2, 2, 1200000, 3),
+    (3, 3, 2000000, 7),
+    (4, 4, 1800000, 4);
+go;
+
+select* from Cars;
+select* from Users;
+select * from ProductList;
+select * from ManufacturingCountries;
+select * from FuelTypes;
+select* from BodyTypes;
+select * from Colors;
+select * from Sellers;
